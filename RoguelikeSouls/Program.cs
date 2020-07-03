@@ -119,51 +119,59 @@ namespace RoguelikeSouls
             string inputSeed = "";
             while (true)
             {
-                Console.Write(">>> ");
-                string input = Console.ReadLine().Trim();
-                if (input != "")
+                try
                 {
-                    if (input.Contains(" "))
+                    Console.Write(">>> ");
+                    string input = Console.ReadLine().Trim();
+                    if (input != "")
                     {
-                        command = input.Split(' ')[0];
-                        inputSeed = input.Substring(input.IndexOf(' ') + 1).Trim();
+                        if (input.Contains(" "))
+                        {
+                            command = input.Split(' ')[0];
+                            inputSeed = input.Substring(input.IndexOf(' ') + 1).Trim();
+                        }
+                        else
+                        {
+                            command = input;  // No seed.
+                        }
                     }
                     else
                     {
-                        command = input;  // No seed.
+                        command = "manager";
+                        inputSeed = "";
                     }
-                }
-                else
-                {
-                    command = "manager";
-                    inputSeed = "";
-                }
 
-                switch (command)
+                    switch (command)
+                    {
+                        case "help":
+                            Console.WriteLine(helpText);
+                            break;
+                        case "install":
+                            INSTALL(inputSeed);
+                            break;
+                        case "install-no-anim":
+                            INSTALL(inputSeed, skipAnimRandomizer: true);
+                            break;
+                        case "manager":
+                            MANAGE_RUN(inputSeed, immediateRestart: false);
+                            break;
+                        case "manager-restart":
+                            MANAGE_RUN(inputSeed, immediateRestart: true);
+                            break;
+                        case "uninstall":
+                            UNINSTALL();
+                            break;
+                        case "exit":
+                            return;
+                        default:
+                            Console.WriteLine($"Invalid command: {command}.");
+                            break;
+                    }
+                } catch (Exception ex)
                 {
-                    case "help":
-                        Console.WriteLine(helpText);
-                        break;
-                    case "install":
-                        INSTALL(inputSeed);
-                        break;
-                    case "install-no-anim":
-                        INSTALL(inputSeed, skipAnimRandomizer: true);
-                        break;
-                    case "manager":
-                        MANAGE_RUN(inputSeed, immediateRestart: false);
-                        break;
-                    case "manager-restart":
-                        MANAGE_RUN(inputSeed, immediateRestart: true);
-                        break;
-                    case "uninstall":
-                        UNINSTALL();
-                        break;
-                    case "exit":
-                        return;
-                    default:
-                        Console.WriteLine($"Invalid command: {command}.");
-                        break;
+                    using (var logWriter = new StreamWriter("crash_log.txt", false))
+                        logWriter.Write($"Unhandled exception:\r\n{ex.Message}\r\n\r\nStacktrace:\r\n{ex.StackTrace}");
+                    break;
                 }
             }
         }
